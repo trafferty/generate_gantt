@@ -1,6 +1,7 @@
 # Generated chart output
 *.png
 *.pdf
+!example_gantt.png
 
 # Python
 __pycache__/
