@@ -1,0 +1,177 @@
+project:
+  name: "Nexus PEC"
+  subtitle: "2026 Project Schedule"
+  start: "2026-02-03"
+  workdays: "M,T,W,Th,F"   # working days (default); options: M T W Th F Sa Su
+
+groups:
+
+  - name: XFD
+    tasks:
+      - id: xfd_jni
+        name: "JNI: barebones (support Brent's testing)"
+        assignee: Marc
+        start: "2026-02-03"
+        due: "2026-02-13"
+
+      - id: xfd_mods
+        name: "XFD mods to support new JNI"
+        assignee: Brent
+        start: "2026-02-14"
+        due: "2026-02-27"
+
+  - name: "PEC - Low Level"
+    tasks:
+      - id: pec_timing
+        name: "Vet low-level timing on JS4 (Tcl script method)"
+        assignee: Brent
+        start: "2026-02-03"
+        due: "2026-02-13"
+
+      - id: pec_2pass
+        name: "Goal: 2-pass patterns with hard-PD"
+        assignee: Brent
+        start: "2026-02-03"
+        due: "2026-02-13"
+
+  - name: Multi-PEC
+    tasks:
+      - id: multi_pec_offline
+        name: "Low-level testing offline"
+        assignee: Marc
+        start: "2026-02-14"
+        due: "2026-02-27"
+
+      - id: multi_pec_xfd_mods
+        name: "XFD mods for multi-PEC"
+        assignee: Brent
+        start: "2026-02-28"
+        due: "2026-03-04"
+
+      - id: multi_pec_config
+        name: "Configure JS4 with 2 disp heads / 2 PECs"
+        assignee: "Marc, Brent"
+        start: "2026-02-28"
+        due: "2026-03-04"
+
+      - id: multi_pec_single_pass
+        name: "Goal: single-pass with 2 heads"
+        assignee: "Marc, Brent"
+        start: "2026-03-05"
+        due: "2026-03-06"
+
+      - id: multi_pec_multi_pass
+        name: "Goal: multi-pass with 2 heads"
+        assignee: "Marc, Brent"
+        start: "2026-03-07"
+        due: "2026-03-11"
+
+  - name: "PEC IssueB Board"
+    tasks:
+      - id: issueb_schematic
+        name: "Schematic updates"
+        assignee: Nexus
+        start: "2026-02-14"
+        due: "2026-02-20"
+
+      - id: issueb_pcb
+        name: "PCB layout updates"
+        assignee: Nexus
+        start: "2026-02-21"
+        due: "2026-02-27"
+
+      - id: issueb_review
+        name: "Review by CNT EE Team"
+        assignee: "EE Team"
+        start: "2026-02-28"
+        due: "2026-03-06"
+
+      - id: issueb_fab
+        name: "PCB fabrication"
+        assignee: Nexus
+        start: "2026-03-07"
+        due: "2026-03-13"
+
+      - id: issueb_assembly
+        name: "Assembly"
+        assignee: Nexus
+        start: "2026-03-14"
+        due: "2026-03-27"
+
+      - id: issueb_proto_debug
+        name: "Prototypes arrive, debug & test"
+        assignee: Nexus
+        start: "2026-03-28"
+        due: "2026-04-17"
+
+      - id: issueb_proto_ship
+        name: "Prototypes ship to CNT"
+        assignee: Nexus
+        start: "2026-04-18"
+        due: "2026-05-01"
+
+      - id: issueb_receive
+        name: "Receive first issueB board sets"
+        assignee: CNT
+        start: "2026-05-02"
+        due: "2026-05-08"
+
+      - id: issueb_initial_test
+        name: "Initial testing"
+        assignee: Marc
+        start: "2026-05-09"
+        due: "2026-05-15"
+
+      - id: issueb_single_pec
+        name: "Single PEC testing"
+        assignee: "Marc, Brent"
+        start: "2026-05-16"
+        due: "2026-05-22"
+
+      - id: issueb_multi_pec
+        name: "Multi-PEC testing"
+        assignee: "Marc, Brent"
+        start: "2026-05-23"
+        due: "2026-05-29"
+
+  - name: "Driver Development"
+    tasks:
+      - id: driver_general
+        name: "General driver dev (normal head orientation)"
+        assignee: Marc
+        start: "2026-02-14"
+        due: "2026-03-06"
+
+  - name: UFD
+    tasks:
+      - id: ufd_brandon
+        name: "Wrap up Brandon's work"
+        assignee: "Brandon, Marc"
+        start: "2026-02-14"
+        due: "2026-03-06"
+
+      - id: ufd_transition
+        name: "Transition work to AlexK"
+        assignee: AlexK
+        start: "2026-02-14"
+        due: "2026-03-06"
+
+      - id: ufd_define
+        name: "Define UFD functionality"
+        assignee: Brent
+        start: "2026-03-07"
+        due: "2026-03-20"
+
+      - id: ufd_roadmap
+        name: "Develop formal roadmap"
+        assignee: Team
+        start: "2026-03-21"
+        due: "2026-03-27"
+
+  - name: TCS
+    tasks:
+      - id: tcs_driver
+        name: "New UFD/PEC driver (subset of FluidDispense)"
+        assignee: AlexK
+        start: "2026-02-14"
+        due: "2026-03-02"

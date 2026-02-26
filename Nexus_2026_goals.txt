@@ -1,0 +1,79 @@
+Nexus Goals
+
+Current capabilities
+ - Dispense a one-pass buffer using soft- and hard-PD
+
+Short term goals:
+
+ XFD
+  - complete the hacked version of XFD: 
+   - JNI: barebones, just enough to support Brent's testing (Marc, by 02/13)
+   - XFD mods to support new JNI (Brent, by 02/27)
+  Functionality: 
+  - Will be able to load any ADR and process it into PEC buffers and load to PEC with the proper descriptors
+  - Will be able to talk to current TCS and accept jetting commands
+  - All orchestrated using a ELT recipe
+
+ PEC
+ - vetting out the low-level timing on JS4 (Brent, by 02/13)
+   - using existing Tcl script method (Brent, by 02/13)
+   - Goal: complete 2-pass patterns with hard-PD (Brent, by 02/13)
+
+ - Multi-PEC
+  - HW: modified issueA (master) + non-modified issueA (verify with Nexus)
+  - low-level testing offline (Marc, by 02/27)
+  - XFD mods (Brent, by 03/04)
+  - Configure JS4 with 2 disp heads and thus 2 PECs (Marc, Brent, by 03/04)
+  - Goal: dispense single-pass with 2 heads (Marc, Brent, by 03/06)
+   - work through head alignment
+  - Goal: dispense multi-pass with 2 heads (Marc, Brent, by 03/11)
+
+ - PEC IssueB board
+  - Schematic updates (Nexus, by 02/20)
+  - PCB layout updates (Nexus, by 02/27)
+  - Review by CNT (EE Team, by 03/06)
+  - PCB Fabrication (Nexus, by 03/13)
+  - Assembly (Nexus, by 03/27)
+  - Prototypes arrive, debug & test (Nexus, by 04/17)
+  - Prototypes ship to CNT (Nexus, by 05/01)
+  - Receive first issueB board sets (CNT, by 05/08)
+  - initial testing (Marc, by 05/15)
+  - JS4 testing
+   - single PEC testing (Marc, Brent, by 05/22)
+   - multi-PEC testing (Marc, Brent, by 05/29)
+
+ - Driver development 
+  - Marc's list for general development (normal head orientation) (Marc, by 03/06)
+  - head orientation flexibility -> future dev (talk to Qi, JohnW)
+  - periodic dispense handling?
+
+Long term goals
+ XFD plus
+ - IAP-type (6-pass) patterns
+
+ UFD
+  - Wrap up Brandon's work (Brandon, Marc, by 03/06)
+  - transition work to AlexK (AlexK, by 03/06)
+  - Define functionality (Brent, by 03/20):
+    - XFD interface
+    - configuration: xfd*.properties
+    - auto-splitting
+    - periodic dispense handling
+    - DnC script: recipe manipulation
+    - etc
+  - Develop formal roadmap (Team, by 03/27)
+
+ TCS
+  - new UFD/PEC driver (AlexK, by 03/02)
+   - subset of FluidDispense driver
+
+Production level tests
+ - Run normal ELT recipes
+  - take recipe, process ADR, load buffers to PEC, printing
+  - verification of:
+   - auto-splitting
+   - DnC/DPOS
+
+
+
+
