@@ -289,9 +289,11 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None) -> None:
         )
     )
     ax.legend(
-        handles=handles, loc="lower right",
+        handles=handles,
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.0),
         fontsize=10, framealpha=0.92,
-        ncol=min(3, len(handles)),
+        ncol=len(handles),
     )
 
     # ── title ─────────────────────────────────────────────────────────────────
