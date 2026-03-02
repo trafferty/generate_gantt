@@ -1,0 +1,175 @@
+project:
+  name: "Nexus PEC"
+  subtitle: "2026 Project Schedule"
+  start: "2026-02-03"
+  workdays: "M,T,W,Th,F"   # working days (default); options: M T W Th F Sa Su
+
+groups:
+
+  - name: XFD/TCS Service Mode
+    tasks:
+      - id: image_ID
+        name: "Work out dispense image ID system"
+        assignee: Brent
+        start: "2026-03-02"
+        duration: "2w"
+
+      - id: highlevel_PEC
+        name: "Move pieces into PEC driver"
+        assignee: Brent
+        predecessor: image_ID
+        duration: "2w"
+
+      - id: pec_2pass
+        name: "Goal: 2-pass patterns with hard-PD"
+        assignee: Brent
+        predecessor: highlevel_PEC
+        duration: "2d"
+
+  - name: Multi-PEC on JS4 (SN2)
+    tasks:
+      - id: sn2_multi_pec_offline
+        name: "SN2 PEC: Upgrade and low-level testing offline"
+        assignee: Marc
+        start: "2026-03-02"
+        duration: "1d"
+
+      - id: install_new_pec
+        name: "Install PEC (SN2) on JS4; test solo"
+        assignee: Marc
+        start: "2026-03-09"
+        duration: "2d"
+
+      - id: multi_pec_solo_print
+        name: "Initial vetting and verify solo print of PEC0 (SN?) and PEC1 (SN2) (soft then hard-PDs)"
+        assignee: Marc
+        predecessor: install_new_pec
+        duration: "3d"
+
+      - id: multi_pec_single_pass
+        name: "Goal: Print single-pass with 2-heads (in daisy-chain mode)"
+        assignee: Marc, Brent
+        predecessor: multi_pec_solo_print
+        duration: "5d"
+
+      - id: multi_pec_multi_pass
+        name: "Goal: Print multi-pass with 2-heads (in daisy-chain mode)"
+        assignee: Marc, Brent
+        predecessor: multi_pec_single_pass
+        duration: "10d"
+
+  - name: "PEC IssueB Board"
+    tasks:
+      - id: issueb_schematic
+        name: "Schematic updates"
+        assignee: Nexus
+        start: "2026-02-23"
+        duration: "1w"
+
+      - id: issueb_pcb
+        name: "PCB layout updates"
+        assignee: Nexus
+        predecessor: issueb_schematic
+        duration: "1w"
+
+      - id: issueb_review
+        name: "Review by CNT EE Team"
+        assignee: "EE Team"
+        predecessor: issueb_pcb
+        duration: "1w"
+
+      - id: issueb_fab
+        name: "PCB fabrication"
+        assignee: Nexus
+        predecessor: issueb_review
+        duration: "1w"
+
+      - id: issueb_assembly
+        name: "Assembly"
+        assignee: Nexus
+        predecessor: issueb_fab
+        duration: "2w"
+
+      - id: issueb_proto_debug
+        name: "Prototypes arrive, debug & test"
+        assignee: Nexus
+        predecessor: issueb_assembly
+        duration: "3w"
+
+      - id: issueb_proto_ship
+        name: "Prototypes ship to CNT"
+        assignee: Nexus
+        predecessor: issueb_proto_debug
+        duration: "10d"
+
+      - id: issueb_receive
+        name: "Receive first issueB board sets"
+        assignee: CNT
+        predecessor: issueb_proto_ship
+        duration: "1d"
+
+      - id: issueb_initial_test
+        name: "Initial testing"
+        assignee: Marc
+        predecessor: issueb_receive
+        duration: "6d"
+
+      - id: issueb_single_pec
+        name: "Single PEC testing"
+        assignee: "Marc, Brent"
+        predecessor: issueb_initial_test
+        duration: "5d"
+
+      - id: issueb_multi_pec
+        name: "Multi-PEC testing"
+        assignee: "Marc, Brent"
+        predecessor: issueb_single_pec
+        duration: "10d"
+
+  - name: "Driver Development"
+    tasks:
+      - id: driver_general
+        name: "General driver dev (normal head orientation)"
+        assignee: Marc
+        start: "2026-02-14"
+        due: "2026-03-27"
+
+  - name: UFD
+    tasks:
+      - id: ufd_brandon
+        name: "Wrap up Brandon's work"
+        assignee: "Brandon, Marc"
+        start: "2026-02-14"
+        due: "2026-03-06"
+
+      - id: ufd_transition
+        name: "Transition work to AlexK"
+        assignee: Brandon, AlexK
+        start: "2026-02-14"
+        due: "2026-03-06"
+
+      - id: ufd_define
+        name: "Define UFD functionality"
+        assignee: Brent, AlexK
+        start: "2026-03-07"
+        due: "2026-03-20"
+
+      - id: ufd_roadmap
+        name: "Develop formal roadmap"
+        assignee: Brent, AlexK, Marc
+        start: "2026-03-23"
+        due: "2026-03-27"
+
+  - name: TCS
+    tasks:
+      - id: tcs_ufd_driver
+        name: "First pass at TCS driver for UFD"
+        assignee: AlexK
+        start: "2026-02-23"
+        duration: "5d"
+
+      - id: tcs_ufd_command interface
+        name: "TCS command interface for UFD"
+        assignee: AlexK
+        start: "2026-03-02"
+        duration: "5d"
