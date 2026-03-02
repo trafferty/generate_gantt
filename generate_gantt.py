@@ -12,6 +12,7 @@ Dependencies: pip install pyyaml matplotlib
 
 import math
 import re
+import textwrap
 import yaml
 import matplotlib
 matplotlib.use("Agg")  # non-interactive backend; change to "TkAgg" to preview
@@ -36,6 +37,7 @@ PALETTE = [
 
 
 WORKDAYS_DEFAULT = "M,T,W,Th,F"
+LABEL_WRAP_WIDTH = 25   # characters; task names longer than this wrap to a second line
 HOURS_PER_DAY    = 8
 
 # Abbreviation → Python weekday (0=Mon … 6=Sun)
@@ -212,9 +214,16 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
 
     rows = build_rows(data, workday_set, days_per_week, days_per_month)
 
+    # ── pre-wrap long task labels ──────────────────────────────────────────────
+    wrapped_task_label = {
+        row["id"]: textwrap.fill(row["label"], width=LABEL_WRAP_WIDTH)
+        for row in rows if row["type"] == "task"
+    }
+    n_extra_lines = sum(1 for w in wrapped_task_label.values() if "\n" in w)
+
     # ── figure sizing ─────────────────────────────────────────────────────────
     n_rows = len(rows)
-    fig_h = max(10, n_rows * 0.58 + 3.0)
+    fig_h = max(10, n_rows * 0.58 + n_extra_lines * 0.38 + 3.0)
     fig, ax = plt.subplots(figsize=(22, fig_h))
 
     # ── collect dates for axis limits ─────────────────────────────────────────
@@ -308,7 +317,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             )
 
             ytick_pos.append(y)
-            ytick_labels.append(row["label"])
+            ytick_labels.append(wrapped_task_label[row["id"]])
 
     # ── today marker ──────────────────────────────────────────────────────────
     from matplotlib.transforms import blended_transform_factory
