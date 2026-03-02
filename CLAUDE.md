@@ -62,7 +62,9 @@ groups:
       - id: unique_task_id          # required, used internally (no spaces)
         name: "Human-readable name" # required
         assignee: "Alice, Bob"      # optional
-        start: "2026-02-01"         # required
+        start: "2026-02-01"         # use EITHER start OR predecessor (not both)
+        predecessor: other_task_id  # alternative to start — task begins the next
+                                    #   working day after the referenced task's due date
         due: "2026-02-14"           # use EITHER due OR duration (not both)
         duration: "2w"              # alternative to due — see Duration Formats below
 ```
@@ -112,7 +114,7 @@ to the nearest whole working day.
 ## Potential Future Enhancements
 
 - Shade non-working days on the chart
-- `depends_on:` field to auto-compute start dates from predecessor task due dates
+- Visual dependency arrows between predecessor and successor tasks
 - Milestone markers (zero-duration tasks rendered as a diamond)
 - Per-task colour override
 - Hours-per-day configurable in project section (currently hardcoded to 8)

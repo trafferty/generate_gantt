@@ -103,38 +103,90 @@ def load_data(yaml_file: str) -> dict:
         return yaml.safe_load(f)
 
 
+def resolve_task_dates(data: dict, workday_set: set, days_per_week: float, days_per_month: float) -> dict:
+    """Compute {start, due} for every task, resolving predecessor chains.
+
+    Returns a dict mapping task_id -> {"start": datetime, "due": datetime}.
+    Tasks with 'predecessor' inherit their start date as the next working day
+    after the predecessor's due date.  Circular dependencies are detected.
+    """
+    raw_tasks = {}
+    for group in data["groups"]:
+        for task in group["tasks"]:
+            raw_tasks[task["id"]] = task
+
+    resolved  = {}
+    resolving = set()  # tracks the current resolution stack for cycle detection
+
+    def resolve(task_id: str) -> dict:
+        if task_id in resolved:
+            return resolved[task_id]
+        if task_id in resolving:
+            raise ValueError(
+                f"Circular predecessor dependency involving task {task_id!r}."
+            )
+        if task_id not in raw_tasks:
+            raise ValueError(f"Unknown task id {task_id!r} referenced as predecessor.")
+
+        resolving.add(task_id)
+        task = raw_tasks[task_id]
+
+        # ── resolve start ──────────────────────────────────────────────────────
+        if "start" in task:
+            start = parse_date(task["start"])
+        elif "predecessor" in task:
+            pred = resolve(task["predecessor"])
+            # start the next working day after the predecessor's due date
+            start = add_working_days(pred["due"], 1, workday_set)
+        else:
+            raise ValueError(
+                f"Task {task_id!r} has neither 'start' nor 'predecessor'."
+            )
+
+        # ── resolve due ────────────────────────────────────────────────────────
+        if "due" in task:
+            due = parse_date(task["due"])
+        elif "duration" in task:
+            wd  = duration_to_working_days(task["duration"], days_per_week, days_per_month)
+            due = add_working_days(start, wd, workday_set)
+        else:
+            raise ValueError(
+                f"Task {task_id!r} has neither 'due' nor 'duration'."
+            )
+
+        resolving.discard(task_id)
+        resolved[task_id] = {"start": start, "due": due}
+        return resolved[task_id]
+
+    for task_id in raw_tasks:
+        resolve(task_id)
+
+    return resolved
+
+
 def build_rows(data: dict, workday_set: set, days_per_week: float, days_per_month: float) -> list:
     """Flatten groups + tasks into an ordered list of display rows.
 
-    Each task must have either a 'due' date or a 'duration' field.
-    If 'duration' is given, the due date is computed by advancing the
-    start date by that many working days (respecting workday_set).
+    Each task must have either a 'due' date or a 'duration' field, and either
+    a 'start' date or a 'predecessor' task id.  If 'predecessor' is given the
+    start date is set to the next working day after that task's due date.
     """
+    dates = resolve_task_dates(data, workday_set, days_per_week, days_per_month)
+
     rows = []
     for gi, group in enumerate(data["groups"]):
         color = PALETTE[gi % len(PALETTE)]
         rows.append({"type": "group", "label": group["name"], "color": color})
         for task in group["tasks"]:
-            start = parse_date(task["start"])
-            if "due" in task:
-                due = parse_date(task["due"])
-            elif "duration" in task:
-                wd = duration_to_working_days(
-                    task["duration"], days_per_week, days_per_month
-                )
-                due = add_working_days(start, wd, workday_set)
-            else:
-                raise ValueError(
-                    f"Task {task['id']!r} has neither 'due' nor 'duration'."
-                )
+            d = dates[task["id"]]
             rows.append(
                 {
                     "type": "task",
                     "id": task["id"],
                     "label": task["name"],
                     "assignee": str(task.get("assignee", "")),
-                    "start": start,
-                    "due": due,
+                    "start": d["start"],
+                    "due": d["due"],
                     "color": color,
                     "group": group["name"],
                 }
@@ -142,7 +194,7 @@ def build_rows(data: dict, workday_set: set, days_per_week: float, days_per_mont
     return rows
 
 
-def generate_gantt(yaml_file: str, output: str, formats: list = None) -> None:
+def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legend: bool = None) -> None:
     if formats is None:
         formats = ["png"]
     data = load_data(yaml_file)
@@ -153,6 +205,10 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None) -> None:
     workday_set   = parse_workdays(workday_str)
     days_per_week  = float(len(workday_set))
     days_per_month = days_per_week / 7.0 * 30.44
+
+    # ── legend visibility: CLI flag beats YAML setting, YAML beats default (True) ──
+    if show_legend is None:
+        show_legend = data["project"].get("legend", True)
 
     rows = build_rows(data, workday_set, days_per_week, days_per_month)
 
@@ -206,6 +262,37 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None) -> None:
                     fill=False, hatch="////",
                     edgecolor=row["color"], linewidth=0,
                     zorder=3, alpha=0.35,
+                )
+
+            # start date label to the left of the bar
+            ax.text(
+                mdates.date2num(start) - 0.8, y,
+                f"{start.strftime('%b')} {start.day}",
+                va="center", ha="right",
+                fontsize=9, color="#333",
+                zorder=4,
+            )
+
+            # duration label inside the bar (only when bar is wide enough)
+            if duration >= 7:
+                wd_count = sum(
+                    1 for i in range(1, duration + 1)
+                    if (start + timedelta(days=i)).weekday() in workday_set
+                )
+                int_dpw = max(int(round(days_per_week)), 1)
+                weeks, extra = divmod(wd_count, int_dpw)
+                if extra == 0 and weeks >= 1:
+                    dur_text = f"{weeks}w"
+                elif weeks >= 1:
+                    dur_text = f"{weeks}w {extra}d"
+                else:
+                    dur_text = f"{wd_count}d"
+                ax.text(
+                    mdates.date2num(start) + duration / 2, y,
+                    dur_text,
+                    va="center", ha="center",
+                    fontsize=8, color="white", fontweight="bold",
+                    zorder=4,
                 )
 
             # due date + assignee label to the right of the bar
@@ -271,30 +358,31 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None) -> None:
         ax.spines[spine].set_visible(False)
 
     # ── legend ────────────────────────────────────────────────────────────────
-    handles = []
-    for gi, group in enumerate(data["groups"]):
+    if show_legend:
+        handles = []
+        for gi, group in enumerate(data["groups"]):
+            handles.append(
+                mpatches.Patch(
+                    color=PALETTE[gi % len(PALETTE)], alpha=0.85,
+                    label=group["name"],
+                )
+            )
+        handles.append(
+            plt.Line2D([0], [0], color="#cc0000", lw=1.8, linestyle="--", label="Today")
+        )
         handles.append(
             mpatches.Patch(
-                color=PALETTE[gi % len(PALETTE)], alpha=0.85,
-                label=group["name"],
+                facecolor="white", edgecolor="#888", hatch="////", alpha=0.6,
+                label="Past due",
             )
         )
-    handles.append(
-        plt.Line2D([0], [0], color="#cc0000", lw=1.8, linestyle="--", label="Today")
-    )
-    handles.append(
-        mpatches.Patch(
-            facecolor="white", edgecolor="#888", hatch="////", alpha=0.6,
-            label="Past due",
+        ax.legend(
+            handles=handles,
+            loc="upper center",
+            bbox_to_anchor=(0.5, 1.0),
+            fontsize=10, framealpha=0.92,
+            ncol=len(handles),
         )
-    )
-    ax.legend(
-        handles=handles,
-        loc="upper center",
-        bbox_to_anchor=(0.5, 1.0),
-        fontsize=10, framealpha=0.92,
-        ncol=len(handles),
-    )
 
     # ── title ─────────────────────────────────────────────────────────────────
     proj = data["project"]
@@ -337,6 +425,11 @@ if __name__ == "__main__":
         choices=["png", "pdf", "both"],
         help="Output format: png, pdf, or both (default: png)",
     )
+    p.add_argument(
+        "--no-legend", dest="no_legend", action="store_true",
+        help="Suppress the legend (overrides 'legend: false' in the YAML)",
+    )
     args = p.parse_args()
     formats = ["png", "pdf"] if args.fmt == "both" else [args.fmt]
-    generate_gantt(args.tasks, args.output, formats)
+    show_legend = False if args.no_legend else None  # None → defer to YAML
+    generate_gantt(args.tasks, args.output, formats, show_legend=show_legend)
