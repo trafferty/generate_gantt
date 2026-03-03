@@ -398,9 +398,18 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     title_line = proj["name"]
     if proj.get("subtitle"):
         title_line += f" — {proj['subtitle']}"
-    ax.set_title(
-        f"{title_line}\nGenerated {today.strftime('%B %d, %Y')}",
-        fontsize=15, fontweight="bold", pad=40,  # extra pad for top x-axis labels
+    subtitle_line = f"Generated {today.strftime('%B %d, %Y')}"
+    rev_str = proj.get("revision_date")
+    if rev_str:
+        subtitle_line += f"  ·  Rev {parse_date(rev_str).strftime('%B %d, %Y')}"
+    ax.set_title(title_line, fontsize=15, fontweight="bold", pad=80)
+    # Subtitle in a smaller font, placed between the tick labels and main title
+    from matplotlib.transforms import ScaledTranslation
+    subtitle_transform = ax.transAxes + ScaledTranslation(0, 52/72, fig.dpi_scale_trans)
+    ax.text(
+        0.5, 1.0, subtitle_line,
+        transform=subtitle_transform,
+        fontsize=10, ha="center", va="bottom", color="#555555",
     )
 
     plt.tight_layout()
@@ -411,7 +420,9 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
         base, _ = os.path.splitext(output)
     else:
         project_slug = data["project"]["name"].replace(" ", "_")
-        base = f"{project_slug}-{today.strftime('%Y-%m-%d')}_Gantt"
+        rev_str = data["project"].get("revision_date")
+        file_date = parse_date(rev_str) if rev_str else today
+        base = f"{project_slug}-{file_date.strftime('%Y-%m-%d')}_Gantt"
 
     for fmt in formats:
         path = f"{base}.{fmt}"
