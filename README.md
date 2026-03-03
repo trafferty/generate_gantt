@@ -9,9 +9,13 @@ A data-driven Gantt chart generator. Define your project tasks in a YAML file an
 - **YAML-driven** — all project data lives in one easy-to-edit file
 - **Colour-coded groups** — tasks organised into labelled sections, one colour per group
 - **Flexible due dates** — specify an explicit `due:` date or a `duration:` (e.g. `2w`, `3d`, `40h`, `1.5m`)
+- **Predecessor tasks** — chain tasks with `predecessor:` so a task starts the next working day after another ends
 - **Working-day aware** — duration calculations respect a configurable workday schedule (default M–F)
+- **Bar labels** — start date shown left of each bar; duration summary inside (for wide bars); due date and `[assignee]` shown to the right
+- **Long name wrapping** — task names longer than 25 characters wrap to a second line automatically
 - **Past-due highlighting** — tasks past their due date are automatically dimmed and hatched
 - **Today marker** — red dashed vertical line labelled with the current date
+- **Optional legend** — shown by default; hide with `legend: false` in YAML or `--no-legend` on the CLI
 - **PNG and/or PDF output** — vector PDF scales perfectly for printing and sharing
 - **Auto-named output** — files named `{Project_Name}-{YYYY-MM-DD}_Gantt.{ext}`
 
@@ -28,6 +32,7 @@ python3 generate_gantt.py --tasks my_project.yaml            # PNG (default)
 python3 generate_gantt.py --tasks my_project.yaml --format pdf
 python3 generate_gantt.py --tasks my_project.yaml --format both
 python3 generate_gantt.py --tasks my_project.yaml --output custom_name
+python3 generate_gantt.py --tasks my_project.yaml --no-legend
 ```
 
 ## YAML Format
@@ -40,6 +45,7 @@ project:
   subtitle: "Q1 Roadmap"       # optional — appended to title as "Name — Subtitle"
   start: "2026-01-15"          # optional — pins the left edge of the chart
   workdays: "M,T,W,Th,F"      # optional — default M–F; tokens: M T W Th F Sa Su
+  legend: true                 # optional — set to false to hide the legend (default: true)
 ```
 
 ### `groups` section
@@ -54,13 +60,19 @@ groups:
         name: "Create wireframes"
         assignee: "Alice"
         start: "2026-02-01"
-        due: "2026-02-14"       # explicit end date
+        due: "2026-02-14"         # explicit end date
 
       - id: design_review
         name: "Design review"
         assignee: "Alice, Bob"
         start: "2026-02-15"
-        duration: "3d"          # or compute end date from duration
+        duration: "3d"            # or compute end date from duration
+
+      - id: design_handoff
+        name: "Design handoff and developer briefing"
+        assignee: "Bob"
+        predecessor: design_review  # starts next working day after design_review ends
+        duration: "1d"
 ```
 
 ### Duration formats
@@ -79,4 +91,4 @@ Fractional values are supported (e.g. `2.5d`, `1.7m`). Results round up to the n
 
 ## Example
 
-See [`nexus_tasks.yaml`](nexus_tasks.yaml) for a real-world example with multiple groups, assignees, and a mix of `due` and `duration` fields.
+See [`example_tasks.yaml`](example_tasks.yaml) for a complete example with multiple groups, assignees, predecessor chains, and a mix of `due` and `duration` fields.

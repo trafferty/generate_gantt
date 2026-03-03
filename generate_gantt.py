@@ -307,7 +307,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             # due date + assignee label to the right of the bar
             end_label = f"{due.strftime('%b')} {due.day}"
             if row["assignee"]:
-                end_label += f"  {row['assignee']}"
+                end_label += f"  [{row['assignee']}]"
             ax.text(
                 mdates.date2num(due) + 0.8, y,
                 end_label,
