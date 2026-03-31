@@ -43,6 +43,7 @@ python3 generate_gantt.py --tasks my_project.yaml --no-legend
 project:
   name: "My Project"           # required — used in chart title and output filename
   subtitle: "Q1 Roadmap"       # optional — appended to title as "Name — Subtitle"
+  revision_date: "2026-03-03"  # optional — used in output filename; defaults to today's date
   start: "2026-01-15"          # optional — pins the left edge of the chart
   workdays: "M,T,W,Th,F"      # optional — default M–F; tokens: M T W Th F Sa Su
   legend: true                 # optional — set to false to hide the legend (default: true)

@@ -45,6 +45,8 @@ python3 generate_gantt.py --tasks nexus_tasks.yaml --output my_name  # override 
 project:
   name: "My Project"           # required — used in chart title and output filename
   subtitle: "Q1 Roadmap"       # optional — appended to title as "Name — Subtitle"
+  revision_date: "2026-03-03"  # optional — used in output filename;
+                               #   defaults to today's date if omitted
   start: "2026-01-15"          # optional — pins the left edge of the chart;
                                #   defaults to earliest task start date
   workdays: "M,T,W,Th,F"      # optional — working days for duration calculation;
