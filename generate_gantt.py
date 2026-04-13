@@ -327,7 +327,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     # the bottom of the chart regardless of y-axis range)
     trans_today = blended_transform_factory(ax.transData, ax.transAxes)
     ax.text(
-        today_x, 0.99, today.strftime("%b %-d"),
+        today_x, 0.99, f"{today.strftime('%b')} {today.day}",
         transform=trans_today,
         color="#cc0000", fontsize=10,
         ha="center", va="top", zorder=5,
