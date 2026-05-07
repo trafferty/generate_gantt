@@ -56,7 +56,7 @@ project:
 
 ### `groups` section
 
-Groups contain tasks and are rendered as labelled, colour-coded sections.
+Groups contain tasks and milestones and are rendered as labelled, colour-coded sections.
 
 ```yaml
 groups:
@@ -70,6 +70,13 @@ groups:
                                     #   working day after the referenced task's due date
         due: "2026-02-14"           # use EITHER due OR duration (not both)
         duration: "2w"              # alternative to due — see Duration Formats below
+
+      # Milestone — single point in time, rendered as a diamond + vertical line
+      - id: unique_milestone_id
+        name: "Milestone Name"
+        date: "2026-03-01"          # use EITHER date OR predecessor (not both)
+        predecessor: other_task_id  # alternative to date — pins to predecessor's due date
+                                    #   (no due/duration fields — that's what makes it a milestone)
 ```
 
 ### Duration Formats

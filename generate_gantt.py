@@ -115,9 +115,10 @@ def load_data(yaml_file: str) -> dict:
 
 
 def resolve_task_dates(data: dict, workday_set: set, days_per_week: float, days_per_month: float) -> dict:
-    """Compute {start, due} for every task, resolving predecessor chains.
+    """Compute {start, due} for every task/milestone, resolving predecessor chains.
 
     Returns a dict mapping task_id -> {"start": datetime, "due": datetime}.
+    Milestones also carry "is_milestone": True and have start == due.
     Tasks with 'predecessor' inherit their start date as the next working day
     after the predecessor's due date.  Circular dependencies are detected.
     """
@@ -141,6 +142,21 @@ def resolve_task_dates(data: dict, workday_set: set, days_per_week: float, days_
 
         resolving.add(task_id)
         task = raw_tasks[task_id]
+
+        # ── milestone: explicit date field ─────────────────────────────────────
+        if "date" in task:
+            date = parse_date(task["date"])
+            resolving.discard(task_id)
+            resolved[task_id] = {"start": date, "due": date, "is_milestone": True}
+            return resolved[task_id]
+
+        # ── milestone: predecessor with no start/due/duration ──────────────────
+        if ("predecessor" in task and "start" not in task
+                and "due" not in task and "duration" not in task):
+            pred = resolve(task["predecessor"])
+            resolving.discard(task_id)
+            resolved[task_id] = {"start": pred["due"], "due": pred["due"], "is_milestone": True}
+            return resolved[task_id]
 
         # ── resolve start ──────────────────────────────────────────────────────
         if "start" in task:
@@ -190,8 +206,17 @@ def build_rows(data: dict, workday_set: set, days_per_week: float, days_per_mont
         rows.append({"type": "group", "label": group["name"], "color": color})
         for task in group["tasks"]:
             d = dates[task["id"]]
-            rows.append(
-                {
+            if d.get("is_milestone"):
+                rows.append({
+                    "type": "milestone",
+                    "id": task["id"],
+                    "label": task["name"],
+                    "date": d["start"],
+                    "color": color,
+                    "group": group["name"],
+                })
+            else:
+                rows.append({
                     "type": "task",
                     "id": task["id"],
                     "label": task["name"],
@@ -200,8 +225,7 @@ def build_rows(data: dict, workday_set: set, days_per_week: float, days_per_mont
                     "due": d["due"],
                     "color": color,
                     "group": group["name"],
-                }
-            )
+                })
     return rows
 
 
@@ -223,12 +247,12 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
 
     rows = build_rows(data, workday_set, days_per_week, days_per_month)
 
-    # ── pre-wrap long task labels ──────────────────────────────────────────────
-    wrapped_task_label = {
+    # ── pre-wrap long task/milestone labels ───────────────────────────────────
+    wrapped_row_label = {
         row["id"]: textwrap.fill(row["label"], width=LABEL_WRAP_WIDTH)
-        for row in rows if row["type"] == "task"
+        for row in rows if row["type"] in ("task", "milestone")
     }
-    n_extra_lines = sum(1 for w in wrapped_task_label.values() if "\n" in w)
+    n_extra_lines = sum(1 for w in wrapped_row_label.values() if "\n" in w)
 
     # ── figure sizing ─────────────────────────────────────────────────────────
     n_rows = len(rows)
@@ -236,8 +260,10 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     fig, ax = plt.subplots(figsize=(22, fig_h))
 
     # ── collect dates for axis limits ─────────────────────────────────────────
-    all_starts = [r["start"] for r in rows if r["type"] == "task"]
-    all_dues   = [r["due"]   for r in rows if r["type"] == "task"]
+    all_starts = ([r["start"] for r in rows if r["type"] == "task"]
+                + [r["date"]  for r in rows if r["type"] == "milestone"])
+    all_dues   = ([r["due"]   for r in rows if r["type"] == "task"]
+                + [r["date"]  for r in rows if r["type"] == "milestone"])
 
     # ── draw rows top-to-bottom (y=0 at top after invert_yaxis) ──────────────
     ytick_pos, ytick_labels = [], []
@@ -253,6 +279,20 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             )
             ytick_pos.append(y)
             ytick_labels.append(f"▸  {row['label']}")
+
+        elif row["type"] == "milestone":
+            # ── milestone marker ─────────────────────────────────────────────
+            ms_x = mdates.date2num(row["date"])
+            ax.axvline(ms_x, color=row["color"], lw=1.5, linestyle="--", alpha=0.7, zorder=4)
+            ax.plot(ms_x, y, marker="D", color=row["color"], markersize=9,
+                    markeredgecolor="white", markeredgewidth=0.8, zorder=6)
+            ax.text(
+                ms_x + 0.8, y,
+                f"{row['date'].strftime('%b')} {row['date'].day}",
+                va="center", ha="left", fontsize=9, color="#333", zorder=4,
+            )
+            ytick_pos.append(y)
+            ytick_labels.append(wrapped_row_label[row["id"]])
 
         else:
             # ── task bar ─────────────────────────────────────────────────────
@@ -326,7 +366,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             )
 
             ytick_pos.append(y)
-            ytick_labels.append(wrapped_task_label[row["id"]])
+            ytick_labels.append(wrapped_row_label[row["id"]])
 
     # ── today marker ──────────────────────────────────────────────────────────
     from matplotlib.transforms import blended_transform_factory
@@ -364,12 +404,15 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     ax.invert_yaxis()
     ax.tick_params(axis="y", length=0)
 
-    # bold + coloured group header labels
+    # bold + coloured group headers; italic milestones
     for tick_label, row in zip(ax.get_yticklabels(), rows):
         if row["type"] == "group":
             tick_label.set_fontweight("bold")
             tick_label.set_color(row["color"])
             tick_label.set_fontsize(11)
+        elif row["type"] == "milestone":
+            tick_label.set_style("italic")
+            tick_label.set_color(row["color"])
 
     # ── grid & spines ─────────────────────────────────────────────────────────
     ax.grid(axis="x", alpha=0.2, linestyle=":", zorder=0)
@@ -386,6 +429,11 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
                     color=PALETTE[gi % len(PALETTE)], alpha=0.85,
                     label=group["name"],
                 )
+            )
+        if any(r["type"] == "milestone" for r in rows):
+            handles.append(
+                plt.Line2D([0], [0], marker="D", color="#555", markersize=8,
+                           linestyle="--", linewidth=1.5, label="Milestone")
             )
         handles.append(
             plt.Line2D([0], [0], color="#cc0000", lw=1.8, linestyle="--", label="Today")
