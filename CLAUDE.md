@@ -46,6 +46,7 @@ project:
   name: "My Project"           # required — used in chart title and output filename
   subtitle: "Q1 Roadmap"       # optional — appended to title as "Name — Subtitle"
   revision_date: "2026-03-03"  # optional — used in output filename;
+                               #   use "%DATE" to always stamp today's date;
                                #   defaults to today's date if omitted
   start: "2026-01-15"          # optional — pins the left edge of the chart;
                                #   defaults to earliest task start date

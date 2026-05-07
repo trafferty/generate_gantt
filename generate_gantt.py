@@ -100,6 +100,15 @@ def parse_date(s: str) -> datetime:
     return datetime.strptime(s, "%Y-%m-%d")
 
 
+def resolve_revision_date(rev_str, today: datetime) -> datetime | None:
+    """Return the revision date as a datetime, substituting today for '%DATE'."""
+    if not rev_str:
+        return None
+    if str(rev_str).strip() == "%DATE":
+        return today
+    return parse_date(str(rev_str))
+
+
 def load_data(yaml_file: str) -> dict:
     with open(yaml_file) as f:
         return yaml.safe_load(f)
@@ -337,7 +346,9 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     # ── x axis (top) ──────────────────────────────────────────────────────────
     proj_start = data["project"].get("start")
     x_min = parse_date(proj_start) if proj_start else min(all_starts) - timedelta(days=5)
-    x_max = max(all_dues) + timedelta(days=28)  # extra room for end-date labels
+    span = (max(all_dues) - x_min).days
+    padding = max(7, min(28, span // 10))
+    x_max = max(all_dues) + timedelta(days=padding)
     ax.set_xlim(mdates.date2num(x_min), mdates.date2num(x_max))  # set limits first
     ax.xaxis_date()
     ax.xaxis.tick_top()                                            # move to top
@@ -399,9 +410,9 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     if proj.get("subtitle"):
         title_line += f" — {proj['subtitle']}"
     subtitle_line = f"Generated {today.strftime('%B %d, %Y')}"
-    rev_str = proj.get("revision_date")
-    if rev_str:
-        subtitle_line += f"  ·  Rev {parse_date(rev_str).strftime('%B %d, %Y')}"
+    rev_date = resolve_revision_date(proj.get("revision_date"), today)
+    if rev_date:
+        subtitle_line += f"  ·  Rev {rev_date.strftime('%B %d, %Y')}"
     ax.set_title(title_line, fontsize=15, fontweight="bold", pad=80)
     # Subtitle in a smaller font, placed between the tick labels and main title
     from matplotlib.transforms import ScaledTranslation
@@ -420,8 +431,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
         base, _ = os.path.splitext(output)
     else:
         project_slug = data["project"]["name"].replace(" ", "_")
-        rev_str = data["project"].get("revision_date")
-        file_date = parse_date(rev_str) if rev_str else today
+        file_date = resolve_revision_date(data["project"].get("revision_date"), today) or today
         base = f"{project_slug}-{file_date.strftime('%Y-%m-%d')}_Gantt"
 
     for fmt in formats:
