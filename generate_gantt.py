@@ -292,7 +292,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             )
 
             # duration label inside the bar (only when bar is wide enough)
-            if duration >= 7:
+            if duration >= 2:
                 wd_count = sum(
                     1 for i in range(1, duration + 1)
                     if (start + timedelta(days=i)).weekday() in workday_set
