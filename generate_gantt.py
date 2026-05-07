@@ -371,7 +371,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     # ── today marker ──────────────────────────────────────────────────────────
     from matplotlib.transforms import blended_transform_factory
     today_x = mdates.date2num(today)
-    ax.axvline(today_x, color="#cc0000", lw=1.8, linestyle="--", zorder=5)
+    ax.axvline(today_x, color="#cc0000", lw=1.8, linestyle="--", zorder=5, ymax=0.96)
     # Use blended transform: data x-coords, axes y-coords (so it stays at
     # the bottom of the chart regardless of y-axis range)
     trans_today = blended_transform_factory(ax.transData, ax.transAxes)
