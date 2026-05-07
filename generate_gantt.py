@@ -159,7 +159,7 @@ def resolve_task_dates(data: dict, workday_set: set, days_per_week: float, days_
             due = parse_date(task["due"])
         elif "duration" in task:
             wd  = duration_to_working_days(task["duration"], days_per_week, days_per_month)
-            due = add_working_days(start, wd, workday_set)
+            due = add_working_days(start, wd - 1, workday_set)
         else:
             raise ValueError(
                 f"Task {task_id!r} has neither 'due' nor 'duration'."
@@ -294,7 +294,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             # duration label inside the bar (only when bar is wide enough)
             if duration >= 2:
                 wd_count = sum(
-                    1 for i in range(1, duration + 1)
+                    1 for i in range(0, duration + 1)
                     if (start + timedelta(days=i)).weekday() in workday_set
                 )
                 int_dpw = max(int(round(days_per_week)), 1)
