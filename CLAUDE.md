@@ -15,6 +15,8 @@ The source notes that kicked this off are in `Nexus_2026_goals.txt`.
 |------|---------|
 | `nexus_tasks.yaml` | Task data for the Nexus PEC project — edit this to update the chart |
 | `generate_gantt.py` | General-purpose Gantt generator — reads any conforming YAML file |
+| `example_tasks_short.yaml` | ~6-week demo project — exercises all rendering features at short scale |
+| `example_tasks_long.yaml` | ~6-month demo project — exercises all rendering features at long scale |
 | `Nexus_2026_goals.txt` | Original freeform planning notes (read-only reference) |
 
 Generated output files follow the naming pattern:
@@ -125,6 +127,5 @@ to the nearest whole working day.
 
 - Shade non-working days on the chart
 - Visual dependency arrows between predecessor and successor tasks
-- Milestone markers (zero-duration tasks rendered as a diamond)
 - Per-task colour override
 - Hours-per-day configurable in project section (currently hardcoded to 8)
