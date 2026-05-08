@@ -1,11 +1,9 @@
-# Nexus PEC Schedule — Project Context
+# Gantt Chart Generator — Project Context
 
 ## What This Is
 
 A data-driven Gantt chart generator. Task data lives in a YAML file;
 a Python script reads it and produces a PNG and/or PDF chart.
-
-The source notes that kicked this off are in `Nexus_2026_goals.txt`.
 
 ---
 
@@ -13,11 +11,9 @@ The source notes that kicked this off are in `Nexus_2026_goals.txt`.
 
 | File | Purpose |
 |------|---------|
-| `nexus_tasks.yaml` | Task data for the Nexus PEC project — edit this to update the chart |
 | `generate_gantt.py` | General-purpose Gantt generator — reads any conforming YAML file |
 | `example_tasks_short.yaml` | ~6-week demo project — exercises all rendering features at short scale |
 | `example_tasks_long.yaml` | ~6-month demo project — exercises all rendering features at long scale |
-| `Nexus_2026_goals.txt` | Original freeform planning notes (read-only reference) |
 
 Generated output files follow the naming pattern:
 `{Project_Name}-{YYYY-MM-DD}_Gantt.{png|pdf}`
@@ -29,10 +25,10 @@ Generated output files follow the naming pattern:
 ```bash
 source ~/venv/data/bin/activate
 
-python3 generate_gantt.py --tasks nexus_tasks.yaml            # PNG (default)
-python3 generate_gantt.py --tasks nexus_tasks.yaml --format pdf
-python3 generate_gantt.py --tasks nexus_tasks.yaml --format both
-python3 generate_gantt.py --tasks nexus_tasks.yaml --output my_name  # override filename base
+python3 generate_gantt.py --tasks example_tasks_short.yaml            # PNG (default)
+python3 generate_gantt.py --tasks example_tasks_short.yaml --format pdf
+python3 generate_gantt.py --tasks example_tasks_short.yaml --format both
+python3 generate_gantt.py --tasks my_project.yaml --output my_name  # override filename base
 ```
 
 **Dependencies** (already installed in `~/venv/data`): `pyyaml`, `matplotlib`
