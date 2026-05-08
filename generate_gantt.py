@@ -265,6 +265,17 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     all_dues   = ([r["due"]   for r in rows if r["type"] == "task"]
                 + [r["date"]  for r in rows if r["type"] == "milestone"])
 
+    proj_start = data["project"].get("start")
+    x_min = parse_date(proj_start) if proj_start else min(all_starts) - timedelta(days=5)
+    # always leave at least 5 days left of the earliest task for start-date labels
+    x_min = min(x_min, min(all_starts) - timedelta(days=5))
+    span = (max(all_dues) - x_min).days
+    padding = max(7, min(28, span // 10))
+    x_max = max(all_dues) + timedelta(days=padding)
+    # Label gap scales with project length so the spacing looks consistent
+    # regardless of whether the chart covers 6 weeks or 6 months.
+    label_gap = max(0.3, span * 0.004)
+
     # ── draw rows top-to-bottom (y=0 at top after invert_yaxis) ──────────────
     ytick_pos, ytick_labels = [], []
 
@@ -283,11 +294,11 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
         elif row["type"] == "milestone":
             # ── milestone marker ─────────────────────────────────────────────
             ms_x = mdates.date2num(row["date"])
-            ax.axvline(ms_x, color=row["color"], lw=1.5, linestyle="--", alpha=0.7, zorder=4)
+            ax.axvline(ms_x, color=row["color"], lw=1.5, linestyle="--", alpha=0.7, zorder=4, ymax=0.96)
             ax.plot(ms_x, y, marker="D", color=row["color"], markersize=9,
                     markeredgecolor="white", markeredgewidth=0.8, zorder=6)
             ax.text(
-                ms_x + 0.8, y,
+                ms_x + label_gap, y,
                 f"{row['date'].strftime('%b')} {row['date'].day}",
                 va="center", ha="left", fontsize=9, color="#333", zorder=4,
             )
@@ -300,7 +311,8 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             due   = row["due"]
             past  = due < today
             alpha = 0.40 if past else 0.85
-            duration = max((due - start).days, 1)
+            # +1 so the bar extends through the full due date (not just to its midnight)
+            duration = (due - start).days + 1
 
             ax.barh(
                 y, duration,
@@ -324,7 +336,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
 
             # start date label to the left of the bar
             ax.text(
-                mdates.date2num(start) - 0.8, y,
+                mdates.date2num(start) - label_gap, y,
                 f"{start.strftime('%b')} {start.day}",
                 va="center", ha="right",
                 fontsize=9, color="#333",
@@ -334,7 +346,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             # duration label inside the bar (only when bar is wide enough)
             if duration >= 2:
                 wd_count = sum(
-                    1 for i in range(0, duration + 1)
+                    1 for i in range(0, duration)
                     if (start + timedelta(days=i)).weekday() in workday_set
                 )
                 int_dpw = max(int(round(days_per_week)), 1)
@@ -358,7 +370,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
             if row["assignee"]:
                 end_label += f"  [{row['assignee']}]"
             ax.text(
-                mdates.date2num(due) + 0.8, y,
+                mdates.date2num(start) + duration + label_gap, y,
                 end_label,
                 va="center", ha="left",
                 fontsize=9, color="#333",
@@ -384,11 +396,6 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     )
 
     # ── x axis (top) ──────────────────────────────────────────────────────────
-    proj_start = data["project"].get("start")
-    x_min = parse_date(proj_start) if proj_start else min(all_starts) - timedelta(days=5)
-    span = (max(all_dues) - x_min).days
-    padding = max(7, min(28, span // 10))
-    x_max = max(all_dues) + timedelta(days=padding)
     ax.set_xlim(mdates.date2num(x_min), mdates.date2num(x_max))  # set limits first
     ax.xaxis_date()
     ax.xaxis.tick_top()                                            # move to top
@@ -447,7 +454,7 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
         ax.legend(
             handles=handles,
             loc="upper center",
-            bbox_to_anchor=(0.5, 1.0),
+            bbox_to_anchor=(0.5, -0.02),
             fontsize=10, framealpha=0.92,
             ncol=len(handles),
         )

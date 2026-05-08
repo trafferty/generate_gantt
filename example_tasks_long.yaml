@@ -1,0 +1,188 @@
+project:
+  name: "Demo Project (Long)"
+  subtitle: "6-Month Roadmap"
+  revision_date: "%DATE"
+  start: "2026-03-02"
+  workdays: "M,T,W,Th,F"
+  legend: true
+
+# Today is 2026-05-08.  Tasks with due < today render dimmed + hatched.
+# This file exercises: many groups, parallel tracks, long durations (weeks +
+# months), a mix of duration units (1d, 3d, 2w, 3w, 1.5m), predecessor chains
+# of varying depth, milestones at key phase gates, and long/short task names.
+
+groups:
+  - name: "Research & Discovery"
+    tasks:
+      # ── past-due: parallel tracks from day 1 ────────────────────────────────
+      - id: market_research
+        name: "Market research"
+        assignee: "Alice"
+        start: "2026-03-02"
+        duration: "3w"             # → due Mar 20
+
+      - id: competitive_analysis
+        name: "Competitive analysis"
+        assignee: "Carol"
+        start: "2026-03-02"
+        duration: "4w"             # → due Mar 27  (parallel, longer)
+
+      - id: user_interviews
+        name: "User interviews and synthesis"
+        assignee: "Alice, Bob"
+        predecessor: market_research   # starts Mar 23
+        duration: "2w"                 # → due Apr 3
+
+      # ── milestone: predecessor ───────────────────────────────────────────────
+      - id: discovery_complete
+        name: "Discovery complete"
+        predecessor: user_interviews   # milestone: date = Apr 3
+
+  - name: "Architecture & Design"
+    tasks:
+      # ── past-due: parallel streams ───────────────────────────────────────────
+      - id: tech_arch
+        name: "Technical architecture"
+        assignee: "Dave"
+        start: "2026-04-06"
+        duration: "3w"             # → due Apr 24
+
+      - id: ux_design
+        name: "UX design and prototyping"
+        assignee: "Carol"
+        start: "2026-04-06"
+        duration: "4w"             # → due May 1  (parallel, longer)
+
+      - id: arch_review
+        name: "Architecture review"
+        assignee: "Dave, Alice"
+        predecessor: tech_arch      # starts Apr 27
+        duration: "3d"             # → due Apr 29
+
+      # ── past-due: long name, wraps on y-axis ─────────────────────────────────
+      - id: design_system
+        name: "Design system and component library definition"
+        assignee: "Carol, Eve"
+        predecessor: ux_design      # starts May 4 (back-to-back)
+        duration: "1w"             # → due May 8
+
+      # ── milestone with predecessor ────────────────────────────────────────────
+      - id: arch_approved
+        name: "Architecture approved"
+        predecessor: arch_review    # milestone: date = Apr 29
+
+  - name: "Phase 1: Core Platform"
+    tasks:
+      # ── current / in-progress ────────────────────────────────────────────────
+      - id: infra_setup
+        name: "Infrastructure setup"
+        assignee: "Dave"
+        start: "2026-05-04"
+        duration: "2w"             # → due May 15
+
+      - id: auth_service
+        name: "Authentication service"
+        assignee: "Dave, Frank"
+        predecessor: infra_setup    # starts May 18
+        duration: "2w"             # → due Jun 1
+
+      - id: data_models
+        name: "Core data models"
+        assignee: "Frank"
+        start: "2026-05-11"        # parallel with infra tail
+        duration: "3w"             # → due Jun 1
+
+      - id: api_v1
+        name: "REST API v1"
+        assignee: "Frank, Dave"
+        predecessor: auth_service   # starts Jun 2
+        duration: "3w"             # → due Jun 22
+
+      # ── milestone ────────────────────────────────────────────────────────────
+      - id: phase1_complete
+        name: "Phase 1 complete"
+        predecessor: api_v1        # milestone: date = Jun 22
+
+  - name: "Phase 2: Features"
+    tasks:
+      # ── future: multiple tasks branching from api_v1 ─────────────────────────
+      - id: dashboard
+        name: "Dashboard and reporting"
+        assignee: "Eve"
+        start: "2026-06-08"        # overlaps api_v1 tail, explicit start
+        duration: "1.5m"           # → ~Jun 8 + 32wd ≈ Jul 23
+
+      - id: notifications
+        name: "Notifications and alerts"
+        assignee: "Frank"
+        predecessor: api_v1        # starts Jun 23
+        duration: "2w"             # → due Jul 6
+
+      - id: integrations
+        name: "Third-party integrations"
+        assignee: "Dave, Frank"
+        predecessor: api_v1        # starts Jun 23
+        duration: "3w"             # → due Jul 13
+
+      - id: admin_panel
+        name: "Admin panel"
+        assignee: "Eve"
+        predecessor: dashboard      # starts after dashboard
+        duration: "2w"
+
+      # ── milestone ────────────────────────────────────────────────────────────
+      - id: phase2_complete
+        name: "Phase 2 complete"
+        predecessor: admin_panel   # milestone
+
+  - name: "Testing & Hardening"
+    tasks:
+      - id: integration_testing
+        name: "Integration testing"
+        assignee: "Grace"
+        start: "2026-07-20"
+        duration: "3w"             # → due Aug 7
+
+      - id: security_audit
+        name: "Security audit"
+        assignee: "External"
+        start: "2026-07-27"        # parallel with testing
+        duration: "4w"             # → due Aug 21
+
+      - id: performance_testing
+        name: "Performance and load testing"
+        assignee: "Grace, Dave"
+        predecessor: integration_testing   # starts Aug 10
+        duration: "2w"                     # → due Aug 21
+
+      - id: bug_hardening
+        name: "Bug fixes and hardening"
+        assignee: "All"
+        predecessor: performance_testing   # starts Aug 24
+        duration: "2w"                     # → due Sep 4
+
+      # ── single-day review gate using 1d duration ─────────────────────────────
+      - id: go_no_go
+        name: "Go / No-go review"
+        assignee: "Alice, Dave"
+        predecessor: bug_hardening  # starts Sep 7
+        duration: "1d"             # → due Sep 7  (1-day gate)
+
+  - name: "Launch"
+    tasks:
+      - id: beta_launch
+        name: "Beta launch"
+        assignee: "Alice, Dave"
+        predecessor: go_no_go       # starts Sep 8
+        duration: "1w"             # → due Sep 14
+
+      - id: monitoring_stabilize
+        name: "Monitoring and stabilization"
+        assignee: "Dave, Frank"
+        predecessor: beta_launch    # starts Sep 15
+        duration: "2w"             # → due Sep 25 (ish)
+
+      # ── final milestone ───────────────────────────────────────────────────────
+      - id: ga_launch
+        name: "General availability launch"
+        predecessor: monitoring_stabilize   # milestone

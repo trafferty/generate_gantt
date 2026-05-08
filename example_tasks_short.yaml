@@ -1,0 +1,107 @@
+project:
+  name: "Demo Project (Short)"
+  subtitle: "6-Week Sprint"
+  revision_date: "%DATE"
+  start: "2026-04-27"           # pins left edge of chart
+  workdays: "M,T,W,Th,F"
+  legend: true
+
+# Today is 2026-05-08.  Tasks with due < today render dimmed + hatched.
+# This file exercises: past-due tasks, today marker, back-to-back predecessor
+# chains, parallel tasks, milestones (explicit date + predecessor), short tasks
+# (1d), long wrapping task names, and a mix of due/duration formats.
+
+groups:
+  - name: "Discovery & Planning"
+    tasks:
+      # ── past-due: single-day using duration "1d" ─────────────────────────────
+      - id: kickoff_mtg
+        name: "Kickoff meeting"
+        assignee: "All"
+        start: "2026-04-28"
+        duration: "1d"
+
+      # ── past-due: predecessor chain, duration ────────────────────────────────
+      - id: requirements
+        name: "Gather requirements"
+        assignee: "Alice"
+        predecessor: kickoff_mtg    # starts next working day: Apr 29
+        duration: "1w"             # → due May 5
+
+      - id: scope_doc
+        name: "Write scope document"
+        assignee: "Alice, Bob"
+        predecessor: requirements   # starts May 6 (back-to-back)
+        duration: "3d"             # → due May 8  (ends today — borderline)
+
+      # ── milestone with predecessor (pins to predecessor's due date) ──────────
+      - id: planning_complete
+        name: "Planning complete"
+        predecessor: scope_doc     # milestone: no due/duration → date = May 8
+
+  - name: "Design"
+    tasks:
+      # ── straddles today: explicit start + due ────────────────────────────────
+      - id: wireframes
+        name: "Wireframes"
+        assignee: "Carol"
+        start: "2026-05-04"
+        due:   "2026-05-08"        # ends today
+
+      # ── future: back-to-back predecessor chain (tests the 1-day gap fix) ─────
+      - id: style_guide
+        name: "Style guide and component library"   # long name — wraps in y-axis
+        assignee: "Carol"
+        predecessor: wireframes     # starts May 11 (back-to-back, no gap)
+        duration: "3d"             # → due May 13
+
+      - id: design_review
+        name: "Design review"
+        assignee: "Alice, Carol"
+        predecessor: style_guide    # starts May 14 (back-to-back)
+        duration: "2d"             # → due May 15
+
+      # ── milestone with predecessor ────────────────────────────────────────────
+      - id: design_approved
+        name: "Design approved"
+        predecessor: design_review  # milestone: date = May 15
+
+  - name: "Development"
+    tasks:
+      # ── parallel tasks: same explicit start date ─────────────────────────────
+      - id: backend
+        name: "Backend API"
+        assignee: "Dave"
+        start: "2026-05-18"        # parallel with frontend
+        duration: "2w"             # → due Jun 1
+
+      - id: frontend
+        name: "Frontend implementation"
+        assignee: "Eve"
+        start: "2026-05-18"        # same start — parallel bar
+        duration: "2w"             # → due Jun 1
+
+      - id: integration
+        name: "Integration & wiring"
+        assignee: "Dave, Eve"
+        predecessor: backend        # starts Jun 2
+        duration: "3d"             # → due Jun 4
+
+  - name: "QA & Release"
+    tasks:
+      - id: testing
+        name: "QA testing"
+        assignee: "Frank"
+        predecessor: integration    # starts Jun 5
+        duration: "4d"             # → due Jun 10
+
+      - id: bug_fixes
+        name: "Bug fixes"
+        assignee: "Dave, Eve"
+        predecessor: testing        # starts Jun 11
+        duration: "2d"             # → due Jun 12
+
+      # ── milestone with predecessor ────────────────────────────────────────────
+      - id: launch
+        name: "Launch"
+        predecessor: bug_fixes      # milestone: date = Jun 12
