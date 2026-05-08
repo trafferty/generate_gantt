@@ -10,6 +10,7 @@ A data-driven Gantt chart generator. Define your project tasks in a YAML file an
 - **Colour-coded groups** — tasks organised into labelled sections, one colour per group
 - **Flexible due dates** — specify an explicit `due:` date or a `duration:` (e.g. `2w`, `3d`, `40h`, `1.5m`)
 - **Predecessor tasks** — chain tasks with `predecessor:` so a task starts the next working day after another ends
+- **Milestones** — zero-duration events rendered as a diamond + dashed vertical line; pin to an explicit date or a predecessor
 - **Working-day aware** — duration calculations respect a configurable workday schedule (default M–F)
 - **Bar labels** — start date shown left of each bar; duration summary inside (for wide bars); due date and `[assignee]` shown to the right
 - **Long name wrapping** — task names longer than 25 characters wrap to a second line automatically
@@ -92,4 +93,5 @@ Fractional values are supported (e.g. `2.5d`, `1.7m`). Results round up to the n
 
 ## Example
 
-See [`example_tasks.yaml`](example_tasks.yaml) for a complete example with multiple groups, assignees, predecessor chains, and a mix of `due` and `duration` fields.
+- [`example_tasks_short.yaml`](example_tasks_short.yaml) — ~6-week project covering all features at short scale
+- [`example_tasks_long.yaml`](example_tasks_long.yaml) — ~6-month project covering all features at long scale
