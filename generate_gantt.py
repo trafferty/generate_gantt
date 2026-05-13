@@ -276,6 +276,22 @@ def generate_gantt(yaml_file: str, output: str, formats: list = None, show_legen
     # regardless of whether the chart covers 6 weeks or 6 months.
     label_gap = max(0.3, span * 0.004)
 
+    # ── non-working day shading ───────────────────────────────────────────────
+    day = x_min
+    while day <= x_max:
+        if day.weekday() not in workday_set:
+            # group consecutive non-working days (e.g. Sat+Sun) into one span
+            span_end = day + timedelta(days=1)
+            while span_end <= x_max and span_end.weekday() not in workday_set:
+                span_end += timedelta(days=1)
+            ax.axvspan(
+                mdates.date2num(day), mdates.date2num(span_end),
+                color="#bbbbbb", alpha=0.25, zorder=0, linewidth=0,
+            )
+            day = span_end
+        else:
+            day += timedelta(days=1)
+
     # ── draw rows top-to-bottom (y=0 at top after invert_yaxis) ──────────────
     ytick_pos, ytick_labels = [], []
 
