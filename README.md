@@ -12,6 +12,7 @@ A data-driven Gantt chart generator. Define your project tasks in a YAML file an
 - **Predecessor tasks** — chain tasks with `predecessor:` so a task starts the next working day after another ends
 - **Milestones** — zero-duration events rendered as a diamond + dashed vertical line; pin to an explicit date or a predecessor
 - **Working-day aware** — duration calculations respect a configurable workday schedule (default M–F)
+- **Non-working day shading** — light gray bands highlight weekends (or any non-working days) on the chart
 - **Bar labels** — start date shown left of each bar; duration summary inside (for wide bars); due date and `[assignee]` shown to the right
 - **Long name wrapping** — task names longer than 25 characters wrap to a second line automatically
 - **Past-due highlighting** — tasks past their due date are automatically dimmed and hatched

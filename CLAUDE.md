@@ -97,6 +97,7 @@ to the nearest whole working day.
 ## Chart Features
 
 - **Colour-coded groups** — one colour per group, up to 8 (then cycles)
+- **Non-working day shading** — light gray bands behind bars for days outside `workdays`
 - **Past-due tasks** — dimmed + hatched automatically (due date < today)
 - **Today marker** — red dashed vertical line labelled with current date at top
 - **Dates at top** — x-axis ticks on top of chart, weekly (Mondays)
@@ -111,8 +112,7 @@ to the nearest whole working day.
   content comes from the YAML file.
 - `project.start` anchors the chart's left edge; if omitted the chart starts
   5 days before the earliest task.
-- `workdays` affects duration calculations only; it does not shade weekends on
-  the chart (potential future enhancement).
+- `workdays` affects duration calculations and drives the non-working day shading on the chart.
 - The matplotlib backend is set to `"Agg"` (non-interactive). Change to
   `"TkAgg"` at the top of the script if you want an interactive preview window.
 - PDF output is vector-based (no `dpi` arg); PNG uses `dpi=150`.
@@ -121,7 +121,6 @@ to the nearest whole working day.
 
 ## Potential Future Enhancements
 
-- Shade non-working days on the chart
 - Visual dependency arrows between predecessor and successor tasks
 - Per-task colour override
 - Hours-per-day configurable in project section (currently hardcoded to 8)
